@@ -4,10 +4,12 @@ Demand forecasting and collaborative filtering with the parts that decide
 whether either is trustworthy: leakage-proof features, rolling-origin
 backtesting, drift detection, experiment tracking and gated retraining.
 
-[![CI](https://github.com/akarshanamachanpally/retail-ml-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/akarshanamachanpally/retail-ml-platform/actions/workflows/ci.yml)
+[![CI](https://github.com/Akarshanagoud/retail-forecasting-recommender/actions/workflows/ci.yml/badge.svg)](https://github.com/Akarshanagoud/retail-forecasting-recommender/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Dependencies](https://img.shields.io/badge/core%20dependencies-none-brightgreen)
+
+**Docs:** [Architecture and use cases](docs/ARCHITECTURE.md) · [Verified results](docs/RESULTS.md)
 
 ```bash
 pip install -e ".[dev]"
