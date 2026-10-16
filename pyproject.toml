@@ -26,7 +26,11 @@ ml = ["scikit-learn>=1.3", "numpy>=1.24"]
 spark = ["pyspark>=3.5"]
 mlflow = ["mlflow>=2.10"]
 airflow = ["apache-airflow>=2.8"]
-dev = ["pytest>=8.0", "pytest-cov>=4.1", "ruff>=0.4", "scikit-learn>=1.3", "numpy>=1.24"]
+server = ["fastapi>=0.110", "uvicorn[standard]>=0.27", "pydantic>=2.5"]
+dev = [
+    "pytest>=8.0", "pytest-cov>=4.1", "ruff>=0.4", "scikit-learn>=1.3", "numpy>=1.24",
+    "fastapi>=0.110", "httpx>=0.27",
+]
 
 [project.scripts]
 retailml = "retailml.cli:main"
@@ -37,6 +41,9 @@ Issues = "https://github.com/Akarshanagoud/retail-forecasting-recommender/issues
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+retailml = ["web/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

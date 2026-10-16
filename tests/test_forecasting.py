@@ -467,3 +467,26 @@ def test_scores_are_finite(dataset):
     for origin in result.origins:
         assert math.isfinite(origin.score.mae)
         assert math.isfinite(origin.score.rmse)
+
+
+def test_future_features_never_read_placeholder_targets():
+    from datetime import date, timedelta
+
+    from retailml.data import SalesRecord
+    from retailml.features import FeatureConfig, future_features
+
+    start = date(2025, 1, 6)
+    history = [
+        SalesRecord(date=start + timedelta(days=i), sku="S", store="T", category="c", units=100.0 + (i % 7), price=10.0, on_promotion=False)
+        for i in range(120)
+    ]
+    future = [
+        SalesRecord(date=start + timedelta(days=120 + i), sku="S", store="T", category="c", units=0.0, price=10.0, on_promotion=False)
+        for i in range(28)
+    ]
+    config = FeatureConfig(calendar=False, price=False, promotion=False, fourier_order=0)
+    rows = future_features(history, future, config)
+    assert len(rows) == 28
+    # Every lag value is an observed weekday level (100-106), never the 0 placeholder.
+    lag_columns = len(config.lags)
+    assert all(100.0 <= value <= 106.0 for row in rows for value in row[:lag_columns])

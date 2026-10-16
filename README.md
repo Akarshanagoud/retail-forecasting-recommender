@@ -205,6 +205,33 @@ tested — if the generator stops producing learnable signal, the build fails.
 
 ## Usage
 
+### Demand planning studio
+
+```bash
+pip install -e ".[server]"
+retailml ui                    # opens http://127.0.0.1:8769/ui/
+```
+
+![Forecast view: history, rolling-origin backtest forecasts and a 28-day forecast with an interval built from backtest errors](docs/images/studio-forecast.png)
+
+The studio backtests every model on every series in the background at start-up and
+shows its progress, then serves:
+
+- **Forecast**: one SKU at one store with its backtest windows, the next 28 days and
+  an 80% interval from that model's own backtest errors, plus every model's WAPE on
+  that series.
+- **Models**: the leaderboard against seasonal naive, and WAPE for every series and
+  model as a heat map, so intermittent and shifted series stand out.
+- **Recommendations**: explainable item-item suggestions per customer ("because they
+  bought…") next to the bestseller baseline, with offline evaluation.
+- **Drift**: PSI and KS per feature, performance drift, and the retraining decision
+  the policy makes from them.
+- **Registry**: train a candidate, then try to promote it through the 2% gate.
+
+![Model leaderboard and per-series WAPE heat map](docs/images/studio-models.png)
+
+### CLI
+
 ```bash
 retailml generate --days 730 --out data/
 retailml leakage-check --series 8
@@ -274,12 +301,14 @@ src/retailml/
   drift.py           PSI, KS, performance drift, verdicts
   tracking.py        Experiment tracker and gated model registry
   retraining.py      Trigger policy and promotion decisions
-  cli.py             generate / backtest / recommend / drift / retrain
+  cli.py             generate / backtest / recommend / drift / retrain / ui
+  server.py          Studio API: backtests, forecasts, recommendations, drift, registry
+  web/               Studio front end: static HTML, CSS and JS, no build step
   forecasting/       Baselines, Holt-Winters, ridge, ensemble, sklearn adapter
   recommender/       Item-item CF, popularity baseline, evaluation
 airflow/dags/        The daily pipeline
 .github/scripts/     CI quality gates
-tests/               117 tests
+tests/               126 tests
 ```
 
 ## Testing

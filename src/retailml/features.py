@@ -24,7 +24,7 @@ the code rather than by convention.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import Any
 
@@ -244,10 +244,20 @@ def future_features(
     seasonal value, which is the honest thing a planner could actually compute.
     """
     settings = config or FeatureConfig()
-    combined = sorted(history, key=lambda r: r.date) + sorted(future, key=lambda r: r.date)
-    matrix = build_features(combined, settings)
+    past = sorted(history, key=lambda r: r.date)
+    ahead = sorted(future, key=lambda r: r.date)
+    if not ahead:
+        return []
+    # The future rows' own targets are unknown. Any lag or rolling window that
+    # reaches into the horizon reads the last observed value for the same
+    # weekday instead of whatever placeholder the caller put in ``units``.
+    season = settings.season_length
+    if len(past) < season:
+        raise ValueError(f"need at least {season} days of history to fill future lags")
+    filled = [replace(r, units=past[len(past) - season + (i % season)].units) for i, r in enumerate(ahead)]
+    matrix = build_features(past + filled, settings)
     # The last len(future) rows correspond to the future dates.
-    return matrix.X[-len(future) :] if future else []
+    return matrix.X[-len(ahead) :]
 
 
 def assert_no_leakage(

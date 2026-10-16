@@ -7,6 +7,7 @@
     retailml drift --reference-days 180
     retailml retrain
     retailml leakage-check
+    retailml ui                       # demand-planning studio (server extra)
 
 Exit codes: 0 fine, 1 a quality gate failed or drift was detected, 2 usage.
 """
@@ -15,6 +16,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import threading
+import webbrowser
 from pathlib import Path
 
 from .backtest import BacktestConfig, backtest_dataset, compare_models, render_comparison
@@ -402,6 +405,20 @@ def cmd_runs(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_ui(args: argparse.Namespace) -> int:
+    try:
+        import uvicorn
+    except ImportError:
+        print("the studio needs the server extra: pip install 'retailml[server]'", file=sys.stderr)
+        return EXIT_USAGE
+    url = f"http://{args.host}:{args.port}/ui/"
+    print(f"retailml studio: {url}  (backtests run at start-up; Ctrl+C to stop)")
+    if not args.no_browser:
+        threading.Timer(4.0, webbrowser.open, args=(url,)).start()
+    uvicorn.run("retailml.server:app", host=args.host, port=args.port, log_level="warning")
+    return EXIT_OK
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="retailml",
@@ -488,6 +505,12 @@ def build_parser() -> argparse.ArgumentParser:
     runs.add_argument("--tracking-path", default="mlruns/runs.jsonl")
     runs.add_argument("--json", action="store_true")
     runs.set_defaults(func=cmd_runs)
+
+    ui = sub.add_parser("ui", help="open the demand-planning studio (needs the server extra)")
+    ui.add_argument("--host", default="127.0.0.1")
+    ui.add_argument("--port", type=int, default=8769)
+    ui.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
+    ui.set_defaults(func=cmd_ui)
 
     return parser
 
